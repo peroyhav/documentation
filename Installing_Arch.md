@@ -16,28 +16,36 @@
     $ ping archlinux.org
     $ timedatectl
     ```
-5.  Delete NVME disk contents by issuing a secure format and reset to the nvme
+5.  Erase the disk securelly and format to the desired partition layout
     ```bash
     $ nvme format /dev/nvme0n1 --ses=2 --reset
     # Partition and format the drive
-    # The following partition format should be used:
-    # Id    Size                             Type                 Filesystem
-    # 1     1Mib                             Boot(ef02                             Boot(ef02))
-    # 2     1GiB                             EFI(ef00)            FAT 32
-    # 3     Remainding space                 Linux LUKS(8309)     LUKS
+    # For EFI boot, the following partition scheme could be used:
+    # Id  Size              Type              Filesystem
+    # 1   1Mib              Boot(ef02         Boot(ef02))
+    # 2   1GiB              EFI(ef00)         FAT 32
+    # 3   Remainding space  Linux LUKS(8309)  LUKS
     $ gdisk /dev/ng0nX
     Command (? for help): n
     Partition number (1-128, default 1):
     First sector (34-1998307982, default = 2048) or {+-}size{KMGTP}:
-    Last sector (2048-1998307982, default = 1998307327) or {+-}size{KMGTP}: +1G
+    Last sector (2048-1998307982, default = 1998307327) or {+-}size{KMGTP}: +1M
+    Current type is 8300 (Linux filesystem)
+    Hex code or GUID (L to show codes, Enter = 8300): ef02
+    Changed type of partition to 'EFI system partition'
+
+    Command (? for help): n
+    Partition number (2-128, default 2):
+    First sector (34-1998307982, default = 4096) or {+-}size{KMGTP}:
+    Last sector (4096-1998307982, default = 1998307327) or {+-}size{KMGTP}: +1G
     Current type is 8300 (Linux filesystem)
     Hex code or GUID (L to show codes, Enter = 8300): ef00
     Changed type of partition to 'EFI system partition'
 
     Command (? for help): n
-    Partition number (2-128, default 2):
-    First sector (34-1998307982, default = 2099200) or {+-}size{KMGTP}:
-    Last sector (2099200-1998307982, default = 1998307327) or {+-}size{KMGTP}:
+    Partition number (3-128, default 3):
+    First sector (34-1998307982, default = 2101248) or {+-}size{KMGTP}:
+    Last sector (2101248-1998307982, default = 1998307327) or {+-}size{KMGTP}:
     Current type is 8300 (Linux filesystem)
     Hex code or GUID (L to show codes, Enter = 8300): 8309
     Changed type of partition to 'Linux LUKS'
