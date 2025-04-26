@@ -6,46 +6,37 @@
 4.  Connect to network and prepare for setup
     ```bash
     $ ip link
-    $ iwctl
-    > device list
-    > adapter wlan0 set-property Powered on
-    > station wlan0 show
-    > station wlan0 get-networks
-    > station wlan0 connect {SSID}
-    > exit
+    $ iwctl device list
+    $ iwctl adapter wlan0 set-property Powered on
+    $ iwctl station wlan0 show
+    $ iwctl station wlan0 get-networks
+    $ iwctl station wlan0 connect {SSID}
     $ ping archlinux.org
     $ timedatectl
     ```
 5.  Erase the disk securelly and format to the desired partition layout
     ```bash
+    # This step may be skipped if the disk previously did not contain any sensitive data,
+    # and you don't need or require to have a strong encryption.
     $ nvme format /dev/nvme0n1 --ses=2 --reset
     # Partition and format the drive
     # For EFI boot, the following partition scheme could be used:
     # Id  Size              Type              Filesystem
-    # 1   1Mib              Boot(ef02         Boot(ef02))
-    # 2   1GiB              EFI(ef00)         FAT 32
-    # 3   Remainding space  Linux LUKS(8309)  LUKS
+    # 1   1GiB              EFI(ef00)         FAT 32
+    # 2   Remainding space  Linux LUKS(8309)  LUKS
     $ gdisk /dev/ng0nX
     Command (? for help): n
     Partition number (1-128, default 1):
     First sector (34-1998307982, default = 2048) or {+-}size{KMGTP}:
-    Last sector (2048-1998307982, default = 1998307327) or {+-}size{KMGTP}: +1M
-    Current type is 8300 (Linux filesystem)
-    Hex code or GUID (L to show codes, Enter = 8300): ef02
-    Changed type of partition to 'EFI system partition'
-
-    Command (? for help): n
-    Partition number (2-128, default 2):
-    First sector (34-1998307982, default = 4096) or {+-}size{KMGTP}:
     Last sector (4096-1998307982, default = 1998307327) or {+-}size{KMGTP}: +1G
     Current type is 8300 (Linux filesystem)
     Hex code or GUID (L to show codes, Enter = 8300): ef00
     Changed type of partition to 'EFI system partition'
 
     Command (? for help): n
-    Partition number (3-128, default 3):
-    First sector (34-1998307982, default = 2101248) or {+-}size{KMGTP}:
-    Last sector (2101248-1998307982, default = 1998307327) or {+-}size{KMGTP}:
+    Partition number (2-128, default 2):
+    First sector (34-1998307982, default = 2099200) or {+-}size{KMGTP}:
+    Last sector (2099200-1998307982, default = 1998307327) or {+-}size{KMGTP}:
     Current type is 8300 (Linux filesystem)
     Hex code or GUID (L to show codes, Enter = 8300): 8309
     Changed type of partition to 'Linux LUKS'
@@ -58,36 +49,32 @@
     Do you want to proceed? (Y/N): y
     ...
     # Write random data to the LUKS partition to hide data boundaries
-    $ dd if=/dev/urandom of=/dev/nvme0n1p2 bs=1G oflag=direct status=progress
+    # An alternative way, would be to use cryptsetup, open the encrypted disk
+    # write alll zeroes to the encrypted disk,
+    # then reformat using cryptsetup and a secure key.
+    $ dd if=/dev/urandom of=/dev/nvme0n1p1 bs=1G oflag=direct status=progress
     # Format the partitions
-    $ mkfs.fat -F 32 -n EFI /dev/nvme0n1p2
-    $ cryptsetup luksFormat --pbkdf pbkdf2 /dev/nvme0n1p3
+    $ mkfs.fat -F 32 -n EFI /dev/nvme0n1p1
+    $ cryptsetup luksFormat --pbkdf pbkdf2 /dev/nvme0n1p2
     WARNING!
     ========
-    This will overwrite data on /dev/nvme0n1p3 irrevocably.
+    This will overwrite data on /dev/nvme0n1p2 irrevocably.
 
     Are you sure? (Type 'yes' in capital letters): YES
-    Enter passphrase for /dev/nvme0n1p2:
+    Enter passphrase for /dev/nvme0n1p1:
     Verify passphrase:
-    $ cryptsetup open /dev/nvme0n1p3 root
-    Enter passphrase for /dev/nvme0n1p3:
+    $ cryptsetup open /dev/nvme0n1p2 root
+    Enter passphrase for /dev/nvme0n1p2:
     $ mkfs.btrfs -L ROOT /dev/mapper/root
     $ mount -o compress=zstd /dev/mapper/root /mnt
     $ cd /mnt
     $ btrfs subvolume create @
-    Create subvolume './@'
     $ btrfs subvolume create @boot
-    Create subvolume './@boot'
     $ btrfs subvolume create @root
-    Create subvolume './@root'
     $ btrfs subvolume create @home
-    Create subvolume './@home'
     $ btrfs subvolume create @.snapshots
-    Create subvolume './@.snapshots'
     $ btrfs subvolume create @log
-    Create subvolume './@log'
     $ btrfs subvolume create @pkg
-    Create subvolume './@pkg'
     $ cd
     $ umount -R /mnt
     $ mount --mkdir -o compress=zstd,subvol=@ /dev/mapper/root /mnt
@@ -97,7 +84,7 @@
     $ mount --mkdir -o compress=zstd,subvol=@.snapshots /dev/mapper/root /mnt/.snapshots
     $ mount --mkdir -o compress=zstd,subvol=@log /dev/mapper/root /mnt/var/log
     $ mount --mkdir -o compress=zstd,subvol=@pkg /dev/mapper/root /mnt/var/cache/pacman/pkg
-    $ mount --mkdir /dev/nvme0n1p2 /mnt/efi
+    $ mount --mkdir /dev/nvme0n1p1 /mnt/efi
     ```
 6.  Select mirrors
     ```bash
@@ -133,7 +120,7 @@
     $ pacman -S grub grub-btrfs efibootmgr networkmanager wireless_tools
     # Generate a boot key and add to LUKS volume
     $ dd bs=512 count=4 if=/dev/random iflag=fullblock | install -m 0600 /dev/stdin /etc/cryptsetup-keys.d/cryptbtrfs.key
-    $ cryptsetup luksAddKey /dev/nvme0n1p3 /etc/cryptsetup-keys.d/cryptbtrfs.key
+    $ cryptsetup luksAddKey /dev/nvme0n1p2 /etc/cryptsetup-keys.d/cryptbtrfs.key
     # prepare setup for decrypting the disk
     $ nvim /etc/mkinitcpio.conf
     # update line with HOOKS to the following
@@ -144,10 +131,13 @@
     $ mkinitcpio -P
     $ nvim /etc/default/grub
     # Edit the line for GRUB_CMDLINE_LINUX
+    # to get the UUID of the partitions, you can run the blkid command on a new blank line:
+    :!blkid /dev/nvme0n1p1
     GRUB_CMDLINE_LINUX="... cryptdevice=UUID=device-UUID:root rd.luks.name=device-UUID=root /etc/cryptsetup-keys.d/cryptbtrfs.key"
     Uncomment the line # GRUB_ENABLE_CRYPTODISK=y
     GRUB_ENABLE_CRYPTODISK=y
     $ grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+    $ grub-mkconfig -o /boot/grub/grub.cfg
     $ logout
     $ umount -R /mnt
     $ reboot
