@@ -100,7 +100,7 @@
     ``` bash
     $ arch-chroot /mnt
     $ pacman -Sy
-    $ pacman -S btrfs-progs dosfstools base-devel git bash-completion sudo tmux neovim neofetch ripgrep
+    $ pacman -S btrfs-progs dosfstools base-devel git bash-completion sudo tmux neovim neofetch ripgrep grub-btrfs
     # Create the user you will be using
     $ useradd -m -U {username}
     # Enable sudo group to give sudo privileges 
@@ -117,7 +117,7 @@
     $ echo {hostname} >> /etc/hostname
     # Set boot config and install grub2, grub2-btrfs, and efibootmgr and set up boot environment
     # Install grub and tools for connecting to the internet
-    $ pacman -S grub grub-btrfs efibootmgr networkmanager wireless_tools
+    $ pacman -S grub grub-btrfs efibootmgr networkmanager wireless_tools ufw usbutils wget
     # Generate a boot key and add to LUKS volume
     $ dd bs=512 count=4 if=/dev/random iflag=fullblock | install -m 0600 /dev/stdin /etc/cryptsetup-keys.d/cryptbtrfs.key
     $ cryptsetup luksAddKey /dev/nvme0n1p2 /etc/cryptsetup-keys.d/cryptbtrfs.key
@@ -151,7 +151,7 @@
     $ sudo syustemctl enable --now NetworkManager
     $ sudo nmcli device wifi connect {NetworkName} --ask
     # install desired window manager, e.g. gnome and xfce4-terminal and other tools that is still missing
-    $ sudo pacman -S gnome xfce4-terminal chromium git bash-completion neovim tmux neofetch
-    $ sudo systemctl enable --now gde
+    $ sudo pacman -S gdm alacritty alsa-tools hypridle hyprland hyprlock hyprpaper hyprpolkitagent swaylock wayland dolphin bluez-utils blueman brightnessctl firefox nvidia-dkms pavucontrol ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono wireless_tools wofi network-manager-applet ttf-font-awesome loupe wl-clipboard swaync vlc totem
+    $ sudo systemctl enable --now gdm
     ```
-10. Congratulations, you should now have a graphical UI booted with gnome, the xfce4-terminal, basic tools and a browser, enjoy
+10. Congratulations, you should now have a graphical UI booted with gnome, and are able to switch to hyprland after configuring terminal tools and such.
