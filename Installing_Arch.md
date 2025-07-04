@@ -5,11 +5,15 @@
 3.  Boot into the ISO
 4.  Connect to network and prepare for setup
     ```bash
+    # Network commands
     $ ip link
     $ iwctl device list
     $ iwctl adapter wlan0 set-property Powered on
+    # Enable wlan0 if disabled
     $ iwctl station wlan0 show
+    # Get available networks
     $ iwctl station wlan0 get-networks
+    # Connect to {SSID}
     $ iwctl station wlan0 connect {SSID}
     $ ping archlinux.org
     $ timedatectl
@@ -101,11 +105,14 @@
     $ arch-chroot /mnt
     $ pacman -Sy
     $ pacman -S btrfs-progs dosfstools base-devel git bash-completion sudo tmux neovim neofetch ripgrep grub-btrfs
+    # link so vi and vim commands point to neovim so we don't need to rely on EDITOR=nvim for running visudo etc.
+    $ ln -sf /usr/bin/nvim /usr/bin/vi
+    $ ln -sf /usr/bin/nvim /usr/bin/vim
+    # Enable sudo group to give sudo privileges 
+    $ visudo
+    $ groupadd sudo
     # Create the user you will be using
     $ useradd -m -U {username}
-    # Enable sudo group to give sudo privileges 
-    $ EDITOR=nvim visudo
-    $ groupadd sudo
     $ usermod -aG sudo {username}
     # Set password for the user
     $ passwd {username}
@@ -119,22 +126,25 @@
     # Install grub and tools for connecting to the internet
     $ pacman -S grub grub-btrfs efibootmgr networkmanager wireless_tools ufw usbutils wget
     # Generate a boot key and add to LUKS volume
-    $ dd bs=512 count=4 if=/dev/random iflag=fullblock | install -m 0600 /dev/stdin /etc/cryptsetup-keys.d/cryptbtrfs.key
+    $ dd bs=4k count=1 if=/dev/random iflag=fullblock | install -m 0600 /dev/stdin /etc/cryptsetup-keys.d/cryptbtrfs.key
     $ cryptsetup luksAddKey /dev/nvme0n1p2 /etc/cryptsetup-keys.d/cryptbtrfs.key
     # prepare setup for decrypting the disk
     $ nvim /etc/mkinitcpio.conf
-    # update line with HOOKS to the following
+    # update the following lines
     ...
+    MODULES=(btrfs hid_apple usbhid xhci_hcd)
+    BINARIES=(/usr/bin/btrfs)
+    FILES=(/etc/cryptsetup-keys.d/cryptbtrfs.key)
     HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
     ...
-    FILES=(/etc/cryptsetup-keys.d/cryptbtrfs.key)
     $ mkinitcpio -P
     $ nvim /etc/default/grub
     # Edit the line for GRUB_CMDLINE_LINUX
     # to get the UUID of the partitions, you can run the blkid command on a new blank line:
     :!blkid /dev/nvme0n1p1
+    # /dev/nvme0n1p2: UUID="device-UUID"
     GRUB_CMDLINE_LINUX="... cryptdevice=UUID=device-UUID:root rd.luks.name=device-UUID=root /etc/cryptsetup-keys.d/cryptbtrfs.key"
-    Uncomment the line # GRUB_ENABLE_CRYPTODISK=y
+    # Uncomment the line # GRUB_ENABLE_CRYPTODISK=y
     GRUB_ENABLE_CRYPTODISK=y
     $ grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
     $ grub-mkconfig -o /boot/grub/grub.cfg
@@ -150,7 +160,7 @@
     # connect to the internet for the "first time"
     $ sudo syustemctl enable --now NetworkManager
     $ sudo nmcli device wifi connect {NetworkName} --ask
-    # install desired window manager, e.g. gnome and xfce4-terminal and other tools that is still missing
+    # install desired window manager, e.g. hyprland, alacritty and other tools that is still missing
     $ sudo pacman -S gdm alacritty alsa-tools hypridle hyprland hyprlock hyprpaper hyprpolkitagent swaylock wayland dolphin bluez-utils blueman brightnessctl firefox nvidia-dkms pavucontrol ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono wireless_tools wofi network-manager-applet ttf-font-awesome loupe wl-clipboard swaync vlc totem
     $ sudo systemctl enable --now gdm
     ```
