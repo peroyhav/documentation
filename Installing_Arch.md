@@ -1,4 +1,4 @@
-# Procedure for installing ARCH Linux
+ Procedure for installing ARCH Linux
 
 1.  Download and verify ARCH Linux ISO
 2.  Move ISO to a disk e.g. Ventoy
@@ -97,20 +97,42 @@
 7.  Install base packages and add fstab
     ``` bash
     # Install either intel-ucode or amd-ucode depending on CPU in the device
-    $ packstrap -K /mnt base linux linux-lts linux-firmware intel-ucode
+    $ pacstrap -K /mnt base linux linux-headers linux-firmware intel-ucode neovim bash-completion
     $ genfstab -U /mnt >> /mnt/etc/fstab
     ```
 8.  Chroot into the environment and set up the environment
     ``` bash
     $ arch-chroot /mnt
     $ pacman -Sy
-    $ pacman -S btrfs-progs dosfstools base-devel git bash-completion sudo tmux neovim neofetch ripgrep grub-btrfs
-    # link so vi and vim commands point to neovim so we don't need to rely on EDITOR=nvim for running visudo etc.
-    $ ln -sf /usr/bin/nvim /usr/bin/vi
-    $ ln -sf /usr/bin/nvim /usr/bin/vim
-    # Enable sudo group to give sudo privileges 
-    $ visudo
-    $ groupadd sudo
+    $ pacman -S btrfs-progs dosfstools base-devel git bash-completion sudo tmux neovim neofetch ripgrep grub grub-btrfs efibootmgr networkmanager wireless_tools ufw usbutils wget
+    # Set local timezone to Europe/Oslo
+    $ ln -sf /usr/share/zoneinfo/Europe/Oslo /etc/localtime
+    $ hwclock --systohc
+    $ echo {hostname} >> /etc/hostname
+    # Set boot config and install grub2, grub2-btrfs, and efibootmgr and set up boot environment
+    # Install grub and tools for connecting to the internet
+    # Generate a boot key and add to LUKS volume
+    $ dd bs=512 count=4 if=/dev/random iflag=fullblock | install -m 0600 /dev/stdin /etc/cryptsetup-keys.d/rootfs.key
+    $ cryptsetup luksAddKey /dev/nvme0n1p2 /etc/cryptsetup-keys.d/rootfs.key
+    # prepare setup for decrypting the disk
+    $ nvim /etc/mkinitcpio.conf
+    # update line with HOOKS to the following
+    ...
+    HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
+    ...
+    FILES=(/etc/cryptsetup-keys.d/rootfs.key)
+    $ mkinitcpio -P
+    $ nvim /etc/default/grub
+    # Edit the line for GRUB_CMDLINE_LINUX
+    # to get the UUID of the partitions, you can run the blkid command on a new blank line:
+    :!blkid /dev/nvme0n1p1
+    GRUB_CMDLINE_LINUX="... cryptdevice=UUID=device-UUID:rootfs rd.luks.name=device-UUID=rootfs cryptkey=rootfs:/etc/cryptsetup-keys.d/rootfs.key"
+    Uncomment the line # GRUB_ENABLE_CRYPTODISK=y
+    GRUB_ENABLE_CRYPTODISK=y
+    $ grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
+    $ grub-mkconfig -o /boot/grub/grub.cfg
+    $ logout
+    $ umount -R /mnt
     # Create the user you will be using
     $ useradd -m -U {username}
     $ usermod -aG sudo {username}
@@ -118,49 +140,7 @@
     $ passwd {username}
     New password:
     Retype new password:
-    # Set local timezone to Europe/Oslo
-    $ ln -sf /usr/share/zoneinfo/Europe/Oslo /etc/localtime
-    $ hwclock --systohc
-    $ echo {hostname} >> /etc/hostname
-    # Set boot config and install grub2, grub2-btrfs, and efibootmgr and set up boot environment
-    # Install grub and tools for connecting to the internet
-    $ pacman -S grub grub-btrfs efibootmgr networkmanager wireless_tools ufw usbutils wget
-    # Generate a boot key and add to LUKS volume
-    $ dd bs=4k count=1 if=/dev/random iflag=fullblock | install -m 0600 /dev/stdin /etc/cryptsetup-keys.d/cryptbtrfs.key
-    $ cryptsetup luksAddKey /dev/nvme0n1p2 /etc/cryptsetup-keys.d/cryptbtrfs.key
-    # prepare setup for decrypting the disk
-    $ nvim /etc/mkinitcpio.conf
-    # update the following lines
-    ...
-    MODULES=(btrfs hid_apple usbhid xhci_hcd)
-    BINARIES=(/usr/bin/btrfs)
-    FILES=(/etc/cryptsetup-keys.d/cryptbtrfs.key)
-    HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
-    ...
-    $ mkinitcpio -P
-    $ nvim /etc/default/grub
-    # Edit the line for GRUB_CMDLINE_LINUX
-    # to get the UUID of the partitions, you can run the blkid command on a new blank line:
-    :!blkid /dev/nvme0n1p1
-    # /dev/nvme0n1p2: UUID="device-UUID"
-    GRUB_CMDLINE_LINUX="... cryptdevice=UUID=device-UUID:root rd.luks.name=device-UUID=root /etc/cryptsetup-keys.d/cryptbtrfs.key"
-    # Uncomment the line # GRUB_ENABLE_CRYPTODISK=y
-    GRUB_ENABLE_CRYPTODISK=y
-    $ grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
-    $ grub-mkconfig -o /boot/grub/grub.cfg
-    $ logout
-    $ umount -R /mnt
-    $ reboot
-    # eject the install media while iso environment is shutting down
-    ```
-9.  Reboot the computer and see that you can log in with the user you created
-    ```bash
-    login: {username}
-    password: {password}
-    # connect to the internet for the "first time"
-    $ sudo syustemctl enable --now NetworkManager
-    $ sudo nmcli device wifi connect {NetworkName} --ask
-    # install desired window manager, e.g. hyprland, alacritty and other tools that is still missing
+    # install desired window manager, e.g. gnome and xfce4-terminal and other tools that is still missing
     $ sudo pacman -S gdm alacritty alsa-tools hypridle hyprland hyprlock hyprpaper hyprpolkitagent swaylock wayland dolphin bluez-utils blueman brightnessctl firefox nvidia-dkms pavucontrol ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono wireless_tools wofi network-manager-applet ttf-font-awesome loupe wl-clipboard swaync vlc totem
     $ sudo systemctl enable --now gdm
     ```
