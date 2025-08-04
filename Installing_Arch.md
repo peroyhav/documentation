@@ -13,11 +13,11 @@
     1.  ### Boot into the Live environment
         Reboot your computer and boot from the USB device, You may need to press a key like *Del*, *F12* *F8* or *F2* during startup to select the USB for boot
     1.  ## Connect to the internet
-        If you are not using a wired connection, you probably need to connect to a Wifi now
+        If you are not using a wired connection, you probably need to connect to a Wifi network now
         ```bash
         # Network commands
         $ iwctl device list
-        # powe on the adapter if powered off
+        # power on the adapter if powered off
         $ iwctl adapter phy0 set-property Powered on
         $ iwctl station wlan0 show
         $ iwctl station wlan0 get-networks
@@ -32,7 +32,7 @@
         $ timedatectl set-ntp true
         ```
 1.  ## Disk preparation
-    1.  ### Erase the disk securelly and format to the desired partition layout
+    1.  ### Erase the disk securely and format to the desired partition layout
         If your disk contains sensitive data, you can securely erase it. This step is optional for new drives.
         * For NVME SSDs
           ```bash
@@ -54,7 +54,7 @@
           ```
     
     1.  ### Partition the disk
-        We will create 2 partitions in this guide, where the first is teh EFI partition, and the second is the encrypted btrfs partition where the remainding files are stored
+        We will create 2 partitions in this guide, where the first is the EFI partition, and the second is the encrypted btrfs partition where the remaining files are stored
         > Example partition layout
         >  ```fdisk
         >  Id  Size              Type              Filesystem 
@@ -66,7 +66,7 @@
         ```
         > Create a new GPT partition header with `o` option
         > Create a new 1GB *EFI* partion with the `n` option and set code to `ef00`
-        > Create a new Linux LUKS partition for the remainding disk space with the `n` option and set code to `8309`
+        > Create a new Linux LUKS partition for the remaining disk space with the `n` option and set code to `8309`
         > Save the partition layout with the `w` option, this will exit gdisk simultaneously.
     
     1.  ### Format the EFI partition
@@ -122,7 +122,7 @@
          $ reflector --protocol https --country Norway,Sweden --latest 5 --save /etc/pacman.d/mirrorlist
         ```
     1.  ## Install base system
-        > NOTE: If you wish to use labels instead of UUIDS in /etc/fstab, thats completely possible by replacing the -U flag with -L for genfstab
+        > NOTE: If you wish to use labels instead of UUIDS in /etc/fstab, that's completely possible by replacing the -U flag with -L for genfstab
         ```bash
         # Install either intel-ucode or amd-ucode depending on CPU in the device
         $ pacstrap -K /mnt base linux linux-headers linux-firmware intel-ucode neovim bash-completion
@@ -147,7 +147,7 @@
         $ dd if=/dev/random iflag=fullblock bs=4k count=1 | install -m 0600 /dev/sdtin /etc/cryptsetup-keys.d/arch.key
         $ cryptsetup luksAddKey /dev/nvme0n1p2 /etc/cryptsetup-keys.d/arch.key
         ```
-    1.  ## Set up mkinitcpip to configure initramfs
+    1.  ## Set up mkinitcpio to configure initramfs
         ```bash
         $ nvim /etc/mkinitcpio.conf
         ```
