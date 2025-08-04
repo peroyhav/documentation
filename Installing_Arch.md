@@ -56,9 +56,11 @@
     1.  ### Partition the disk
         We will create 2 partitions in this guide, where the first is teh EFI partition, and the second is the encrypted btrfs partition where the remainding files are stored
         > Example partition layout
-        > Id  Size              Type              Filesystem
-        > 1   1GiB              EFI(ef00)         FAT 32
-        > 2   Remainding space  Linux LUKS(8309)  LUKS
+        >  ```fdisk
+        >  Id  Size              Type              Filesystem 
+        >  1   1GiB              EFI(ef00)         FAT 32
+        >  2   Remainding space  Linux LUKS(8309)  LUKS
+        >  ```
         ```bash
         $ gdisk /dev/nvme0n1
         ```
@@ -157,9 +159,11 @@
         HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
         ```
         > NOTE: The modules, with exception of btrfs are set up because I have a Keycron USB keyboard
-        >       usbhid to support USB keyboard
-        >       hid_apple because the keyboard is reporting as an apple keyboard to the OS
-        >       xhci_hcd to support USB 3.0 and newer
+        > ```
+        > usbhid to support USB keyboard
+        > hid_apple because the keyboard is reporting as an apple keyboard to the OS
+        > xhci_hcd to support USB 3.0 and newer
+        > ```
     
         Run mkinitcpio to generate a correct initramfs file.
         ```bash
