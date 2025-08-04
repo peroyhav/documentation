@@ -1,3 +1,4 @@
+less
 alacritty
 alsa-tools
 base
@@ -9,6 +10,7 @@ bluez-utils
 brightnessctl
 btrfs-progs
 chromium
+curl
 ddrescue
 devtools
 distrobox
@@ -16,6 +18,7 @@ dolphin
 dosfstools
 efibootmgr
 fail2ban
+fastfetch
 firefox
 gdm
 git
@@ -42,10 +45,9 @@ linux-headers
 loupe
 loupe
 man-pages
-neofetch
 neovim
-networkmanager
 network-manager-applet
+networkmanager
 nmap
 ntp
 nvidia-dkms
@@ -68,12 +70,14 @@ swaync
 testdisk
 timeshift
 tmux
+totem
 ttf-font-awesome
 ttf-nerd-fonts-symbols
 ttf-nerd-fonts-symbols-mono
 ufw
 usbutils
-vlc totem
+vlc
+vlc-plugins-all
 wayland
 wget
 wireless_tools

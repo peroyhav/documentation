@@ -192,7 +192,7 @@
         ```
     1.  ## Install userland tools
         ```
-        $ pacman -S base-devel git bash-completion sudo tmux neofetch ripgrep networkmanager wireless_tools ufw usbutils wget
+        $ pacman -S base-devel git bash-completion sudo tmux fastfetch ripgrep networkmanager wireless_tools ufw usbutils wget
         ```
     1.  ## Set up so members of group wheel have sudo rights
         ```bash
@@ -213,7 +213,7 @@
         $ cd documentation
         $ sudo pacman -S --needed - arch.packages
         $ sudo systemctl enable gdm
-        $ sudo systemctl enable gdm
+        $ sudo systemctl enable NetworkManager
         ```
     1. ## Exit fakeroot, unmount disk and reboot
         ```bash
