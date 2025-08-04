@@ -175,6 +175,8 @@
         $ nvim /etc/default/grub
         ```
         ### Go to the line GRUB_CMDLINE_LINUX(line 6) and edit to use an encrypted disk
+        > NOTE: Ensure to replace `$((blkid -s UUID -o value /dev/nvme0n1p2))` with the actial UUID reported by the command.
+
         ```
         GRUB_CMDLINE_LINUX="loglevel=3 quiet cryptdevice=UUID=$((blkid -s UUID -o value /dev/nvme0n1p2)):arch cryptkey=rootfs:/etc/cryptsetup-keys.d/arch.key"
         ```
