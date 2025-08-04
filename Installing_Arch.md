@@ -34,9 +34,24 @@
 1.  ## Disk preparation
     1.  ### Erase the disk securelly and format to the desired partition layout
         If your disk contains sensitive data, you can securely erase it. This step is optional for new drives.
-        ```bash
-        $ nvme format /dev/nvme0n1 --ses=2 --reset
-        ```
+        * For NVME SSDs
+          ```bash
+          $ nvme format /dev/nvme0n1 --ses=2 --reset
+          ```
+        * For SATA SSDs
+          Check if the drive is frozen, if it is, you have to suspend and resume your system to unfreeze it.
+          ```bash
+          $ hdparm -I /dev/sda | grep "frozen"
+          ```
+          Set a temporary password and erase the disk
+          ```bash
+          $ hdparm --user-master u --security-set-pass password /dev/sda
+          $ hdparm --user-master u --security-erase-enhanced password /dev/sda
+          ```
+        * For traditional Harddrives using the shred command to overwrite with random data
+          ```bash
+          shred -n 1 -vz /dev/sda
+          ```
     
     1.  ### Partition the disk
         We will create 2 partitions in this guide, where the first is teh EFI partition, and the second is the encrypted btrfs partition where the remainding files are stored
