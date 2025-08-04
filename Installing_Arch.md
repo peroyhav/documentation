@@ -81,7 +81,6 @@
         $ dd if=/dev/zero of=/dev/mapper/cryptdisk bs=1M status=progress
         $ cryptsetup close cryptdisk
         ```
-        ```
     
     1.  ### Create and mount the encrypted partition
         ```bash
