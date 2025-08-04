@@ -1,13 +1,14 @@
-less
 alacritty
 alsa-tools
 base
 base-devel
 bash-completion
+bees
 bind
 blueman
 bluez-utils
 brightnessctl
+btrbk
 btrfs-progs
 chromium
 curl
@@ -39,6 +40,7 @@ java-atk-wrapper-openjdk17
 k9s
 knockd
 kubectl
+less
 linux
 linux-firmware
 linux-headers
