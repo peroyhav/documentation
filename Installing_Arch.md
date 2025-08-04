@@ -101,7 +101,7 @@
     $ genfstab -U /mnt >> /mnt/etc/fstab
     ```
 8.  Chroot into the environment and set up the environment
-    ``` bash
+    ```bash
     $ arch-chroot /mnt
     $ pacman -Sy
     $ pacman -S btrfs-progs dosfstools base-devel git bash-completion sudo tmux neovim neofetch ripgrep grub grub-btrfs efibootmgr networkmanager wireless_tools ufw usbutils wget
@@ -131,8 +131,6 @@
     GRUB_ENABLE_CRYPTODISK=y
     $ grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB
     $ grub-mkconfig -o /boot/grub/grub.cfg
-    $ logout
-    $ umount -R /mnt
     # Create the user you will be using
     $ useradd -m -U {username}
     $ usermod -aG sudo {username}
@@ -140,8 +138,19 @@
     $ passwd {username}
     New password:
     Retype new password:
-    # install desired window manager, e.g. gnome and xfce4-terminal and other tools that is still missing
-    $ sudo pacman -S gdm alacritty alsa-tools hypridle hyprland hyprlock hyprpaper hyprpolkitagent swaylock wayland dolphin bluez-utils blueman brightnessctl firefox nvidia-dkms pavucontrol ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono wireless_tools wofi network-manager-applet ttf-font-awesome loupe wl-clipboard swaync vlc totem
+    $ su {username}
+    $ mkdir .git
+    $ cd .git
+    $ git clone https://github.com/peroyhav/documentation.git
+    $ cd documentation
+    $ sudo pacman -S --needed - arch.packages
     $ sudo systemctl enable --now gdm
     ```
-10. Congratulations, you should now have a graphical UI booted with gnome, and are able to switch to hyprland after configuring terminal tools and such.
+10. Exit fakeroot, unmount disk and reboot
+    ```bash
+    $ logout
+    $ exit
+    $ umount -R /mnt
+    $ reboot
+    ```
+11. Congratulations, you should now have a graphical UI booted with gnome, and are able to switch to hyprland after configuring terminal tools and such.
